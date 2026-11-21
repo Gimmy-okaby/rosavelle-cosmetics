@@ -73,6 +73,17 @@ BEGIN
         RAISE EXCEPTION 'Order contains too many distinct items (maximum 50)';
     END IF;
 
+    -- Reject duplicate product/variant items in the same payload
+    IF (
+        SELECT COUNT(*)
+        FROM (
+            SELECT DISTINCT v->>'product_id', COALESCE(v->>'variant_id', '')
+            FROM jsonb_array_elements(p_items) v
+        ) sub
+    ) != v_items_count THEN
+        RAISE EXCEPTION 'Duplicate items detected in order payload. Please combine quantities for the same product.';
+    END IF;
+
     -- 3. Fetch free shipping threshold from store settings
     SELECT free_shipping_threshold INTO v_free_shipping_threshold
     FROM public.store_settings WHERE id = 1;

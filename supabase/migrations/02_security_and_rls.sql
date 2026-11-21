@@ -41,15 +41,14 @@ CREATE POLICY "Users can view own profile"
 ON public.profiles FOR SELECT
 USING (auth.uid() = id);
 
--- Users can update their own personal details (name, phone) but NEVER their role
+-- Users can update their own personal details (name, phone)
+-- Role immutability is strictly enforced by the BEFORE UPDATE trigger 'trg_protect_profile_role'
+-- avoiding recursive RLS subquery evaluation on public.profiles.
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile"
 ON public.profiles FOR UPDATE
 USING (auth.uid() = id)
-WITH CHECK (
-    auth.uid() = id
-    AND role = (SELECT role FROM public.profiles WHERE id = auth.uid())
-);
+WITH CHECK (auth.uid() = id);
 
 -- Admins can view and manage all profiles
 DROP POLICY IF EXISTS "Admins have full access to profiles" ON public.profiles;

@@ -1,6 +1,6 @@
 ﻿-- ==============================================================================
 -- ROSAVELLE COSMETICS - HARDENED PRODUCTION DATABASE SETUP
--- Version: 2.0 (Security & Business Logic Remediated)
+-- Version: 2.1 (RLS Recursion Hardened & Payload Deduplicated)
 -- ==============================================================================
 
 -- ==============================================================================
@@ -402,15 +402,14 @@ CREATE POLICY "Users can view own profile"
 ON public.profiles FOR SELECT
 USING (auth.uid() = id);
 
--- Users can update their own personal details (name, phone) but NEVER their role
+-- Users can update their own personal details (name, phone)
+-- Role immutability is strictly enforced by the BEFORE UPDATE trigger 'trg_protect_profile_role'
+-- avoiding recursive RLS subquery evaluation on public.profiles.
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile"
 ON public.profiles FOR UPDATE
 USING (auth.uid() = id)
-WITH CHECK (
-    auth.uid() = id
-    AND role = (SELECT role FROM public.profiles WHERE id = auth.uid())
-);
+WITH CHECK (auth.uid() = id);
 
 -- Admins can view and manage all profiles
 DROP POLICY IF EXISTS "Admins have full access to profiles" ON public.profiles;
@@ -670,6 +669,17 @@ BEGIN
     END IF;
     IF v_items_count > 50 THEN
         RAISE EXCEPTION 'Order contains too many distinct items (maximum 50)';
+    END IF;
+
+    -- Reject duplicate product/variant items in the same payload
+    IF (
+        SELECT COUNT(*)
+        FROM (
+            SELECT DISTINCT v->>'product_id', COALESCE(v->>'variant_id', '')
+            FROM jsonb_array_elements(p_items) v
+        ) sub
+    ) != v_items_count THEN
+        RAISE EXCEPTION 'Duplicate items detected in order payload. Please combine quantities for the same product.';
     END IF;
 
     -- 3. Fetch free shipping threshold from store settings
