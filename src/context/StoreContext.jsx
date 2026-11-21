@@ -9,6 +9,7 @@ import {
 import { 
   getProducts, 
   createProduct as createProductService, 
+  updateProduct as updateProductService,
   deleteProduct as deleteProductService, 
   uploadProductImage 
 } from '../services/productsService';
@@ -383,9 +384,17 @@ export const StoreProvider = ({ children }) => {
     return savedProduct;
   };
 
-  const updateProduct = (updatedProduct) => {
-    setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
-    showToast(lang === 'ar' ? 'تم تحديث بيانات المنتج' : 'Product updated');
+  const updateProduct = async (updatedProduct) => {
+    try {
+      const persisted = await updateProductService(updatedProduct.id, updatedProduct);
+      setProducts(prev => prev.map(p => p.id === updatedProduct.id ? { ...p, ...persisted } : p));
+      showToast(lang === 'ar' ? 'تم تحديث بيانات المنتج بنجاح' : 'Product updated');
+      return persisted;
+    } catch (err) {
+      console.error('Failed to update product in database:', err);
+      showToast(lang === 'ar' ? 'فشل تحديث بيانات المنتج في السيرفر' : 'Failed to update product on server', 'error');
+      throw err;
+    }
   };
 
   const deleteProduct = async (productId) => {

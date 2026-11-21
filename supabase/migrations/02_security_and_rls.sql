@@ -1,5 +1,5 @@
 -- ==============================================================================
--- 02_security_and_rls.sql - Row Level Security (RLS) Policies
+-- 02_security_and_rls.sql - Hardened Row Level Security (RLS) Policies
 -- ==============================================================================
 
 -- ------------------------------------------------------------------------------
@@ -20,7 +20,9 @@ ALTER TABLE public.inventory_movements ENABLE ROW LEVEL SECURITY;
 -- 2. HELPER FUNCTION: Check if requesting user is an Admin
 -- ------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS BOOLEAN AS $$
+RETURNS BOOLEAN 
+SECURITY DEFINER SET search_path = public, pg_temp
+AS $$
 BEGIN
     RETURN EXISTS (
         SELECT 1 FROM public.profiles
@@ -28,40 +30,51 @@ BEGIN
         AND role IN ('admin', 'super_admin')
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
 -- ------------------------------------------------------------------------------
--- 3. PROFILES POLICIES
+-- 3. PROFILES POLICIES & SECURE REGISTRATION TRIGGER
 -- ------------------------------------------------------------------------------
 -- Users can view their own profile
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 CREATE POLICY "Users can view own profile"
 ON public.profiles FOR SELECT
 USING (auth.uid() = id);
 
--- Users can update their own profile
+-- Users can update their own personal details (name, phone) but NEVER their role
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile"
 ON public.profiles FOR UPDATE
-USING (auth.uid() = id);
+USING (auth.uid() = id)
+WITH CHECK (
+    auth.uid() = id
+    AND role = (SELECT role FROM public.profiles WHERE id = auth.uid())
+);
 
 -- Admins can view and manage all profiles
+DROP POLICY IF EXISTS "Admins have full access to profiles" ON public.profiles;
 CREATE POLICY "Admins have full access to profiles"
 ON public.profiles FOR ALL
 USING (public.is_admin());
 
 -- Auto-create profile on user signup
+-- CRITICAL SECURITY RULE: Every newly registered user receives 'customer' role.
+-- Never trust client-supplied metadata for authorization!
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+SECURITY DEFINER SET search_path = public, pg_temp
+AS $$
 BEGIN
     INSERT INTO public.profiles (id, email, full_name, role)
     VALUES (
         NEW.id,
         NEW.email,
         COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-        COALESCE(NEW.raw_user_meta_data->>'role', 'customer')
+        'customer' -- HARDCODED: Role cannot be elevated via registration payload
     );
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
 -- Trigger to invoke profile creation on auth.users insert
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
@@ -73,11 +86,13 @@ FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 -- 4. CATEGORIES POLICIES
 -- ------------------------------------------------------------------------------
 -- Public can view active categories
+DROP POLICY IF EXISTS "Public can view active categories" ON public.categories;
 CREATE POLICY "Public can view active categories"
 ON public.categories FOR SELECT
 USING (is_active = true OR public.is_admin());
 
 -- Admins can manage categories
+DROP POLICY IF EXISTS "Admins have full access to categories" ON public.categories;
 CREATE POLICY "Admins have full access to categories"
 ON public.categories FOR ALL
 USING (public.is_admin());
@@ -86,11 +101,13 @@ USING (public.is_admin());
 -- 5. PRODUCTS POLICIES
 -- ------------------------------------------------------------------------------
 -- Public can view active products
+DROP POLICY IF EXISTS "Public can view active products" ON public.products;
 CREATE POLICY "Public can view active products"
 ON public.products FOR SELECT
 USING (is_active = true OR public.is_admin());
 
 -- Admins can manage products
+DROP POLICY IF EXISTS "Admins have full access to products" ON public.products;
 CREATE POLICY "Admins have full access to products"
 ON public.products FOR ALL
 USING (public.is_admin());
@@ -99,11 +116,13 @@ USING (public.is_admin());
 -- 6. PRODUCT_VARIANTS POLICIES
 -- ------------------------------------------------------------------------------
 -- Public can view product variants
+DROP POLICY IF EXISTS "Public can view product variants" ON public.product_variants;
 CREATE POLICY "Public can view product variants"
 ON public.product_variants FOR SELECT
 USING (true);
 
 -- Admins can manage product variants
+DROP POLICY IF EXISTS "Admins have full access to product variants" ON public.product_variants;
 CREATE POLICY "Admins have full access to product variants"
 ON public.product_variants FOR ALL
 USING (public.is_admin());
@@ -112,11 +131,13 @@ USING (public.is_admin());
 -- 7. INVENTORY POLICIES
 -- ------------------------------------------------------------------------------
 -- Public can check inventory quantity (read-only)
+DROP POLICY IF EXISTS "Public can read inventory" ON public.inventory;
 CREATE POLICY "Public can read inventory"
 ON public.inventory FOR SELECT
 USING (true);
 
 -- Admins can manage inventory
+DROP POLICY IF EXISTS "Admins have full access to inventory" ON public.inventory;
 CREATE POLICY "Admins have full access to inventory"
 ON public.inventory FOR ALL
 USING (public.is_admin());
@@ -125,11 +146,13 @@ USING (public.is_admin());
 -- 8. STORE_SETTINGS POLICIES
 -- ------------------------------------------------------------------------------
 -- Public can view store settings
+DROP POLICY IF EXISTS "Public can view store settings" ON public.store_settings;
 CREATE POLICY "Public can view store settings"
 ON public.store_settings FOR SELECT
 USING (true);
 
 -- Admins can update store settings
+DROP POLICY IF EXISTS "Admins can update store settings" ON public.store_settings;
 CREATE POLICY "Admins can update store settings"
 ON public.store_settings FOR UPDATE
 USING (public.is_admin());
@@ -138,11 +161,13 @@ USING (public.is_admin());
 -- 9. COUPONS POLICIES
 -- ------------------------------------------------------------------------------
 -- Public can check active, non-expired coupons
+DROP POLICY IF EXISTS "Public can view active coupons" ON public.coupons;
 CREATE POLICY "Public can view active coupons"
 ON public.coupons FOR SELECT
 USING (is_active = true AND (expires_at IS NULL OR expires_at > NOW()));
 
 -- Admins can manage coupons
+DROP POLICY IF EXISTS "Admins have full access to coupons" ON public.coupons;
 CREATE POLICY "Admins have full access to coupons"
 ON public.coupons FOR ALL
 USING (public.is_admin());
@@ -150,12 +175,16 @@ USING (public.is_admin());
 -- ------------------------------------------------------------------------------
 -- 10. ORDERS POLICIES
 -- ------------------------------------------------------------------------------
--- Public/Guest can insert an order
-CREATE POLICY "Anyone can create an order"
+-- HARDENED: Direct INSERT on orders table by public/anonymous is REVOKED.
+-- All guest checkout must go through the validated place_guest_order() RPC!
+DROP POLICY IF EXISTS "Anyone can create an order" ON public.orders;
+DROP POLICY IF EXISTS "Admins can insert orders directly" ON public.orders;
+CREATE POLICY "Admins can insert orders directly"
 ON public.orders FOR INSERT
-WITH CHECK (true);
+WITH CHECK (public.is_admin());
 
--- Users can view their own orders
+-- Users can view their own orders; guests cannot view other orders
+DROP POLICY IF EXISTS "Users can view own orders" ON public.orders;
 CREATE POLICY "Users can view own orders"
 ON public.orders FOR SELECT
 USING (
@@ -164,6 +193,7 @@ USING (
 );
 
 -- Admins have full access to orders
+DROP POLICY IF EXISTS "Admins have full access to orders" ON public.orders;
 CREATE POLICY "Admins have full access to orders"
 ON public.orders FOR ALL
 USING (public.is_admin());
@@ -171,12 +201,15 @@ USING (public.is_admin());
 -- ------------------------------------------------------------------------------
 -- 11. ORDER_ITEMS POLICIES
 -- ------------------------------------------------------------------------------
--- Anyone can insert order items when placing an order
-CREATE POLICY "Anyone can create order items"
+-- HARDENED: Direct INSERT on order_items table by public/anonymous is REVOKED.
+DROP POLICY IF EXISTS "Anyone can create order items" ON public.order_items;
+DROP POLICY IF EXISTS "Admins can insert order items directly" ON public.order_items;
+CREATE POLICY "Admins can insert order items directly"
 ON public.order_items FOR INSERT
-WITH CHECK (true);
+WITH CHECK (public.is_admin());
 
 -- Users can view their own order items
+DROP POLICY IF EXISTS "Users can view own order items" ON public.order_items;
 CREATE POLICY "Users can view own order items"
 ON public.order_items FOR SELECT
 USING (
@@ -188,6 +221,7 @@ USING (
 );
 
 -- Admins have full access to order items
+DROP POLICY IF EXISTS "Admins have full access to order items" ON public.order_items;
 CREATE POLICY "Admins have full access to order items"
 ON public.order_items FOR ALL
 USING (public.is_admin());
@@ -196,6 +230,7 @@ USING (public.is_admin());
 -- 12. INVENTORY_MOVEMENTS POLICIES
 -- ------------------------------------------------------------------------------
 -- Only admins can view or manage inventory movements
+DROP POLICY IF EXISTS "Admins only access to inventory movements" ON public.inventory_movements;
 CREATE POLICY "Admins only access to inventory movements"
 ON public.inventory_movements FOR ALL
 USING (public.is_admin());

@@ -32,6 +32,7 @@ export default function AdminPanel() {
     storeSettings, 
     setStoreSettings, 
     addProduct, 
+    updateProduct,
     deleteProduct, 
     updateOrderStatus, 
     resetDemoData, 
@@ -519,13 +520,27 @@ export default function AdminPanel() {
                         </div>
                       </div>
 
-                      <button
-                        onClick={() => deleteProduct(p.id)}
-                        className="text-stone-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition"
-                        title={lang === 'ar' ? 'حذف المنتج' : 'Delete'}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => updateProduct({ ...p, inStock: !p.inStock })}
+                          className={`px-2 py-1 rounded-lg text-[10px] font-bold border transition ${
+                            p.inStock 
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100' 
+                              : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+                          }`}
+                          title={lang === 'ar' ? 'تعديل حالة التوفر' : 'Toggle Stock Status'}
+                        >
+                          {p.inStock ? (lang === 'ar' ? 'متوفر' : 'In Stock') : (lang === 'ar' ? 'نفد' : 'Out of Stock')}
+                        </button>
+
+                        <button
+                          onClick={() => deleteProduct(p.id)}
+                          className="text-stone-400 hover:text-red-600 p-2 rounded-lg hover:bg-red-50 transition"
+                          title={lang === 'ar' ? 'حذف المنتج' : 'Delete'}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

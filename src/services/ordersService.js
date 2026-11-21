@@ -50,7 +50,11 @@ export async function submitOrder({ customer, cartItems, shippingCost, paymentMe
 
     if (error) {
       console.error('Supabase RPC place_guest_order error:', error);
-      throw new Error(error.message);
+      throw new Error(error.message || 'فشل تسجيل الطلب في السيرفر');
+    }
+
+    if (!data || !data.success) {
+      throw new Error('لم يتمكن السيرفر من تأكيد الطلب بنجاح');
     }
 
     return {
@@ -58,32 +62,19 @@ export async function submitOrder({ customer, cartItems, shippingCost, paymentMe
       order_uuid: data.order_id,
       createdAt: data.created_at,
       items: [...cartItems],
-      subtotal: data.subtotal,
-      discountAmount: data.discount_amount,
-      shippingCost: data.shipping_cost,
-      total: data.total,
+      subtotal: Number(data.subtotal),
+      discountAmount: Number(data.discount_amount),
+      shippingCost: Number(data.shipping_cost),
+      total: Number(data.total),
       customer,
       paymentMethod,
       notes: notes || '',
       status: 'pending'
     };
   } catch (err) {
-    console.warn('Falling back to local order submission due to error:', err);
-    // Fallback gracefully so customer order is never lost
-    const cartSubtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    return {
-      id: `LU-${Math.floor(10000 + Math.random() * 90000)}`,
-      createdAt: new Date().toISOString(),
-      items: [...cartItems],
-      subtotal: cartSubtotal,
-      discountAmount: 0,
-      shippingCost,
-      total: cartSubtotal + shippingCost,
-      customer,
-      paymentMethod,
-      notes: notes || '',
-      status: 'pending'
-    };
+    console.error('Order submission failed on Supabase backend:', err);
+    // In production/cloud mode, rethrow so caller displays a clear error and prevents false order confirmation
+    throw err;
   }
 }
 

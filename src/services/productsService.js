@@ -158,6 +158,45 @@ export async function createProduct(productData) {
 }
 
 /**
+ * Update an existing product in Supabase
+ */
+export async function updateProduct(productId, productData) {
+  if (!isSupabaseConfigured()) {
+    return productData;
+  }
+
+  const updatePayload = {
+    updated_at: new Date().toISOString()
+  };
+
+  if (productData.name_ar !== undefined) updatePayload.name_ar = productData.name_ar;
+  if (productData.name_en !== undefined) updatePayload.name_en = productData.name_en;
+  if (productData.price !== undefined) updatePayload.price = productData.price;
+  if (productData.originalPrice !== undefined) updatePayload.original_price = productData.originalPrice;
+  if (productData.image !== undefined) updatePayload.main_image = productData.image;
+  if (productData.description_ar !== undefined) updatePayload.description_ar = productData.description_ar;
+  if (productData.badge_ar !== undefined) updatePayload.badge_ar = productData.badge_ar;
+  if (productData.inStock !== undefined) updatePayload.in_stock = productData.inStock;
+  if (productData.is_featured !== undefined) updatePayload.is_featured = productData.is_featured;
+
+  const { data, error } = await supabase
+    .from('products')
+    .update(updatePayload)
+    .eq('id', productId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return {
+    ...productData,
+    id: productId
+  };
+}
+
+/**
  * Delete a product (or archive it)
  */
 export async function deleteProduct(productId) {

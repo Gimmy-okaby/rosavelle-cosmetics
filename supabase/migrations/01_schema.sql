@@ -8,7 +8,9 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Function to handle updated_at automatically
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+SECURITY DEFINER SET search_path = public, pg_temp
+AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
@@ -258,3 +260,95 @@ CREATE TABLE IF NOT EXISTS public.inventory_movements (
 
 CREATE INDEX IF NOT EXISTS idx_inv_movements_product ON public.inventory_movements(product_id);
 CREATE INDEX IF NOT EXISTS idx_inv_movements_created ON public.inventory_movements(created_at DESC);
+
+-- ------------------------------------------------------------------------------
+-- 11. AUTOMATIC ORDER STATUS & INVENTORY RESTORATION TRIGGER
+-- ------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.handle_order_status_change()
+RETURNS TRIGGER 
+SECURITY DEFINER SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_item RECORD;
+BEGIN
+    -- Prevent non-admins from changing order status
+    IF OLD.status != NEW.status AND NOT public.is_admin() THEN
+        RAISE EXCEPTION 'Unauthorized: Only store administrators can change order status.';
+    END IF;
+
+    -- 1. Order Cancelled: Restore inventory exactly once
+    IF OLD.status != 'cancelled' AND NEW.status = 'cancelled' THEN
+        FOR v_item IN 
+            SELECT product_id, variant_id, quantity 
+            FROM public.order_items 
+            WHERE order_id = NEW.id 
+        LOOP
+            -- Atomically restore stock in inventory
+            UPDATE public.inventory
+            SET quantity = quantity + v_item.quantity,
+                updated_at = NOW()
+            WHERE product_id = v_item.product_id
+              AND (
+                  (v_item.variant_id IS NOT NULL AND variant_id = v_item.variant_id)
+                  OR (v_item.variant_id IS NULL AND variant_id IS NULL)
+              );
+
+            -- Log movement audit record
+            INSERT INTO public.inventory_movements (
+                product_id,
+                variant_id,
+                change_amount,
+                previous_quantity,
+                new_quantity,
+                reason,
+                reference_id,
+                notes
+            ) VALUES (
+                v_item.product_id,
+                v_item.variant_id,
+                v_item.quantity,
+                (SELECT quantity - v_item.quantity FROM public.inventory WHERE product_id = v_item.product_id AND ((v_item.variant_id IS NOT NULL AND variant_id = v_item.variant_id) OR (v_item.variant_id IS NULL AND variant_id IS NULL)) LIMIT 1),
+                (SELECT quantity FROM public.inventory WHERE product_id = v_item.product_id AND ((v_item.variant_id IS NOT NULL AND variant_id = v_item.variant_id) OR (v_item.variant_id IS NULL AND variant_id IS NULL)) LIMIT 1),
+                'order_cancellation',
+                NEW.order_number,
+                'Inventory restored automatically upon order cancellation'
+            );
+        END LOOP;
+    END IF;
+
+    -- 2. Prevent un-cancelling an order directly to prevent double-restoring or state corruption
+    IF OLD.status = 'cancelled' AND NEW.status != 'cancelled' THEN
+        RAISE EXCEPTION 'Cancelled orders cannot be reopened directly to prevent inventory discrepancies. Please create a new order.';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_handle_order_status ON public.orders;
+CREATE TRIGGER trg_handle_order_status
+BEFORE UPDATE OF status ON public.orders
+FOR EACH ROW
+EXECUTE FUNCTION public.handle_order_status_change();
+
+-- ------------------------------------------------------------------------------
+-- 12. IMMUTABLE ROLE PROTECTION TRIGGER FOR PROFILES
+-- ------------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.protect_profile_role()
+RETURNS TRIGGER 
+SECURITY DEFINER SET search_path = public, pg_temp
+AS $$
+BEGIN
+    -- Prevent modifying role unless the user executing this is a verified admin
+    IF NEW.role != OLD.role AND NOT public.is_admin() THEN
+        RAISE EXCEPTION 'Unauthorized: Users cannot modify their own account privileges.';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_protect_profile_role ON public.profiles;
+CREATE TRIGGER trg_protect_profile_role
+BEFORE UPDATE OF role ON public.profiles
+FOR EACH ROW
+EXECUTE FUNCTION public.protect_profile_role();
