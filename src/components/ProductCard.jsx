@@ -13,6 +13,7 @@ export default function ProductCard({ product }) {
   } = useStore();
 
   const [selectedShade, setSelectedShade] = useState(product.shades ? product.shades[0] : null);
+  const [added, setAdded] = useState(false);
   const isWish = isInWishlist(product.id);
 
   const discountPercent = product.originalPrice 
@@ -22,6 +23,8 @@ export default function ProductCard({ product }) {
   const handleAddToCart = (e) => {
     e.stopPropagation();
     addToCart(product, 1, selectedShade, product.sizes ? product.sizes[0] : null);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1600);
   };
 
   const handleToggleWishlist = (e) => {
@@ -155,11 +158,24 @@ export default function ProductCard({ product }) {
 
           <button
             onClick={handleAddToCart}
-            className="flex items-center justify-center gap-1.5 bg-stone-900 hover:bg-rose-600 text-white px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-colors duration-200 shadow-xs"
+            className={`flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all duration-200 shadow-xs active:scale-95 ${
+              added 
+                ? 'bg-emerald-600 text-white scale-105' 
+                : 'bg-stone-900 hover:bg-rose-600 text-white'
+            }`}
             title={lang === 'ar' ? "إضافة إلى السلة" : "Add to bag"}
           >
-            <ShoppingBag className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{lang === 'ar' ? "أضيفي" : "Add"}</span>
+            {added ? (
+              <>
+                <Check className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{lang === 'ar' ? "تمت الإضافة!" : "Added!"}</span>
+              </>
+            ) : (
+              <>
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{lang === 'ar' ? "أضيفي" : "Add"}</span>
+              </>
+            )}
           </button>
         </div>
       </div>
