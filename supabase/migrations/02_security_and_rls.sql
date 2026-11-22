@@ -233,3 +233,30 @@ DROP POLICY IF EXISTS "Admins only access to inventory movements" ON public.inve
 CREATE POLICY "Admins only access to inventory movements"
 ON public.inventory_movements FOR ALL
 USING (public.is_admin());
+
+-- ------------------------------------------------------------------------------
+-- 13. ROLE PRIVILEGES & TABLE GRANTS (PostgREST API Access)
+-- ------------------------------------------------------------------------------
+-- Ensure schema usage
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+
+-- Anonymous users (Guests / Visitors): Read-only access governed by RLS
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon;
+
+-- Authenticated users (Customers & Admins): Table-level access, strictly filtered by RLS
+GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+GRANT ALL ON ALL ROUTINES IN SCHEMA public TO authenticated;
+
+-- Service role: Full maintenance access
+GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL ROUTINES IN SCHEMA public TO service_role;
+
+-- Default privileges for future objects
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO anon;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON ROUTINES TO anon, authenticated, service_role;
+
