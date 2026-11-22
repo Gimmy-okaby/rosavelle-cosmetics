@@ -22,7 +22,7 @@ import MobileBottomNav from './components/MobileBottomNav';
 
 function MainApp() {
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF7F5] selection:bg-rose-200 selection:text-rose-900 pb-16 sm:pb-0">
+    <div className="min-h-screen flex flex-col bg-[#0F0E11] text-stone-100 selection:bg-rose-600 selection:text-white pb-20 sm:pb-0">
       {/* Top Navigation */}
       <Header />
 

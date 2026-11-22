@@ -80,26 +80,26 @@ export default function RecentSalesNotification() {
   if (!currentNotification || !visible || dismissed) return null;
 
   return (
-    <div className={`fixed bottom-20 sm:bottom-6 ${lang === 'ar' ? 'right-4' : 'left-4'} z-30 max-w-sm bg-white/95 backdrop-blur-md border border-rose-200/80 rounded-2xl p-3 shadow-xl transition-all duration-500 animate-slide-up flex items-center gap-3`}>
+    <div className={`fixed bottom-20 sm:bottom-6 ${lang === 'ar' ? 'right-4' : 'left-4'} z-30 max-w-sm bg-[#181320]/95 backdrop-blur-md border border-amber-500/30 rounded-2xl p-3.5 shadow-2xl transition-all duration-500 animate-slide-up flex items-center gap-3`}>
       {/* Product Thumbnail */}
       <img
         src={currentNotification.image}
         alt="Product"
-        className="w-12 h-12 rounded-xl object-cover shrink-0 border border-stone-100 shadow-sm"
+        className="w-13 h-13 rounded-xl object-cover shrink-0 border border-stone-800 shadow-sm"
       />
 
       {/* Info */}
       <div className="flex-1 min-w-0 pr-1">
-        <div className="flex items-center gap-1.5 text-xs text-stone-500">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-          <span className="font-semibold text-stone-900 truncate">
+        <div className="flex items-center gap-1.5 text-xs text-stone-400">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span className="font-bold text-white truncate text-xs sm:text-sm">
             {lang === 'ar' ? currentNotification.name_ar : currentNotification.name_en}
           </span>
         </div>
-        <p className="text-xs font-medium text-rose-900 truncate mt-0.5">
+        <p className="text-xs sm:text-sm font-extrabold text-amber-300 truncate mt-0.5">
           {lang === 'ar' ? currentNotification.product_ar : currentNotification.product_en}
         </p>
-        <span className="text-[10px] text-stone-400 block">
+        <span className="text-[10px] text-stone-500 block">
           {lang === 'ar' ? currentNotification.time_ar : currentNotification.time_en}
         </span>
       </div>
@@ -107,10 +107,10 @@ export default function RecentSalesNotification() {
       {/* Close button */}
       <button
         onClick={() => setDismissed(true)}
-        className="text-stone-400 hover:text-stone-600 p-1 shrink-0 rounded-full hover:bg-stone-100 transition-colors"
+        className="text-stone-500 hover:text-white p-1 shrink-0 rounded-full hover:bg-white/10 transition-colors"
         title="إغلاق"
       >
-        <X className="w-3.5 h-3.5" />
+        <X className="w-4 h-4" />
       </button>
     </div>
   );

@@ -48,81 +48,71 @@ ${itemsText}
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${whatsappMessage}`;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-900/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-fade-in">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fade-in">
       <div 
-        className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-stone-100 p-6 sm:p-8 text-center"
+        className="relative bg-[#181320] text-stone-100 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-amber-500/40 p-6 sm:p-8 text-center"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={() => setLastOrderPlaced(null)}
-          className="absolute top-4 end-4 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center transition"
+          className="absolute top-4 end-4 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-stone-300 hover:text-white flex items-center justify-center transition"
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5" />
         </button>
 
         {/* Success Icon */}
-        <div className="w-20 h-20 rounded-full bg-emerald-50 text-emerald-600 mx-auto flex items-center justify-center mb-4 shadow-inner">
+        <div className="w-20 h-20 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 mx-auto flex items-center justify-center mb-5 animate-bounce shadow-xl">
           <CheckCircle2 className="w-10 h-10" />
         </div>
 
-        {/* Title */}
-        <h3 className="text-2xl font-extrabold text-stone-900 mb-1">
+        <h3 className="text-2xl sm:text-3xl font-black text-white mb-2">
           {lang === 'ar' ? 'تم استلام طلبك بنجاح! 🎉' : 'Order Placed Successfully! 🎉'}
         </h3>
-        <p className="text-xs sm:text-sm text-stone-500 mb-6">
-          {lang === 'ar' 
-            ? `شكراً لتسوقك من ${storeSettings.storeName_ar}. سيتم تجهيز وشحن طلبك بأعلى عناية.` 
-            : `Thank you for shopping with ${storeSettings.storeName_en}. Your order is being prepared.`}
+
+        <p className="text-sm text-stone-300 font-medium mb-6">
+          {lang === 'ar'
+            ? 'شكراً لثقتك في روزافيل كوزمتكس. سيقوم فريق خدمة العملاء بالتواصل معك لتأكيد موعد الشحن.'
+            : 'Thank you for choosing Rosavelle Cosmetics. Our support team will contact you to verify dispatch.'}
         </p>
 
-        {/* Order ID Badge */}
-        <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 mb-6 text-start">
-          <div className="flex items-center justify-between pb-3 border-b border-stone-200">
-            <span className="text-xs text-stone-500">{lang === 'ar' ? 'رقم الطلب:' : 'Order ID:'}</span>
-            <span className="font-mono font-extrabold text-stone-900 text-base">{lastOrderPlaced.id}</span>
+        {/* Order Details Card */}
+        <div className="bg-[#1F1928] p-5 rounded-2xl border border-rose-950/60 text-start space-y-2.5 text-xs sm:text-sm mb-6">
+          <div className="flex justify-between items-center pb-2 border-b border-rose-950/40">
+            <span className="text-stone-400 font-bold">{lang === 'ar' ? 'رقم الطلب:' : 'Order ID:'}</span>
+            <span className="font-mono font-black text-amber-300 text-base">{lastOrderPlaced.id}</span>
           </div>
-
-          <div className="py-2.5 space-y-1.5 text-xs text-stone-600 border-b border-stone-200">
-            <div className="flex justify-between">
-              <span>{lang === 'ar' ? 'المستلم:' : 'Recipient:'}</span>
-              <span className="font-semibold text-stone-800">{lastOrderPlaced.customer.name}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>{lang === 'ar' ? 'رقم الهاتف:' : 'Phone:'}</span>
-              <span className="font-semibold text-stone-800">{lastOrderPlaced.customer.phone}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>{lang === 'ar' ? 'العنوان:' : 'Address:'}</span>
-              <span className="font-semibold text-stone-800 truncate max-w-[200px]">{lastOrderPlaced.customer.address}</span>
-            </div>
+          <div className="flex justify-between items-center">
+            <span className="text-stone-400 font-bold">{lang === 'ar' ? 'الاسم:' : 'Customer:'}</span>
+            <span className="font-bold text-white">{lastOrderPlaced.customer.name}</span>
           </div>
-
-          <div className="flex items-center justify-between pt-3 text-sm font-extrabold text-stone-900">
-            <span>{lang === 'ar' ? 'المبلغ الإجمالي:' : 'Total Amount:'}</span>
-            <span className="text-rose-600 text-base">{formatPrice(lastOrderPlaced.total)}</span>
+          <div className="flex justify-between items-center">
+            <span className="text-stone-400 font-bold">{lang === 'ar' ? 'الهاتف:' : 'Phone:'}</span>
+            <span className="font-bold text-white">{lastOrderPlaced.customer.phone}</span>
+          </div>
+          <div className="flex justify-between items-center pt-2 border-t border-rose-950/40">
+            <span className="text-stone-400 font-bold">{lang === 'ar' ? 'المبلغ الإجمالي:' : 'Total:'}</span>
+            <span className="font-black text-amber-300 text-lg">{formatPrice(lastOrderPlaced.total)}</span>
           </div>
         </div>
 
-        {/* Big Action: WhatsApp Instant Confirmation Button */}
-        <div className="space-y-3">
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 px-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg transition"
-          >
-            <MessageSquare className="w-5 h-5" />
-            <span>{lang === 'ar' ? 'تأكيد وشحن الطلب عبر واتساب 💬' : 'Confirm Order via WhatsApp 💬'}</span>
-          </a>
+        {/* WhatsApp Notification Button */}
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white py-4 px-6 rounded-2xl font-black text-base flex items-center justify-center gap-2.5 shadow-xl shadow-emerald-950/60 transition mb-3"
+        >
+          <MessageSquare className="w-5 h-5 fill-current" />
+          <span>{lang === 'ar' ? 'متابعة وتأكيد الطلب عبر واتساب' : 'Track Order on WhatsApp'}</span>
+        </a>
 
-          <button
-            onClick={() => setLastOrderPlaced(null)}
-            className="w-full bg-stone-100 hover:bg-stone-200 text-stone-800 py-3 rounded-2xl font-semibold text-xs transition"
-          >
-            {lang === 'ar' ? 'متابعة التسوق في المتجر' : 'Continue Shopping'}
-          </button>
-        </div>
+        <button
+          onClick={() => setLastOrderPlaced(null)}
+          className="w-full text-sm font-bold text-stone-400 hover:text-white py-2"
+        >
+          {lang === 'ar' ? 'العودة للتسوق' : 'Back to Shopping'}
+        </button>
 
       </div>
     </div>

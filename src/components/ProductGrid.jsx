@@ -74,53 +74,53 @@ export default function ProductGrid() {
   const hasActiveFilters = selectedCategory !== 'all' || searchQuery !== '' || sortBy !== 'featured' || priceRange[1] < 2000;
 
   return (
-    <section id="products-section" className="py-12 bg-[#FAF7F5] scroll-mt-24">
+    <section id="products-section" className="py-14 bg-[#0F0E11] scroll-mt-24 border-b border-rose-950/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Controls Bar (Filter, Sort, Count) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-stone-200/80 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-rose-950/60 mb-10">
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl sm:text-3xl font-black text-white">
                 {lang === 'ar' ? "كتالوج المستحضرات الفاخرة" : "Luxury Product Catalog"}
               </h2>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-stone-200/70 text-stone-700">
+              <span className="text-xs sm:text-sm font-extrabold px-3 py-1 rounded-full bg-rose-950 text-amber-300 border border-amber-500/30">
                 {filteredProducts.length} {lang === 'ar' ? 'منتج' : 'items'}
               </span>
             </div>
             {searchQuery && (
-              <p className="text-xs text-stone-500 mt-1">
+              <p className="text-sm text-stone-400 mt-1.5 font-medium">
                 {lang === 'ar' ? `نتائج البحث عن: "${searchQuery}"` : `Search results for: "${searchQuery}"`}
               </p>
             )}
           </div>
 
-          <div className="flex items-center flex-wrap gap-2.5">
+          <div className="flex items-center flex-wrap gap-3">
             {/* Sort Dropdown */}
             <div className="relative inline-flex items-center">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="bg-white border border-stone-200 text-stone-800 text-xs sm:text-sm rounded-full py-2 px-3 sm:px-4 focus:outline-none focus:border-rose-400 cursor-pointer shadow-2xs font-medium"
+                className="bg-[#18141F] border border-rose-900/40 text-stone-200 text-sm font-bold rounded-2xl py-2.5 px-4 focus:outline-none focus:border-amber-400 cursor-pointer shadow-md"
               >
-                <option value="featured">{lang === 'ar' ? 'الأكثر طلباً (المميز)' : 'Featured'}</option>
-                <option value="price-asc">{lang === 'ar' ? 'السعر: من الأقل للأعلى' : 'Price: Low to High'}</option>
-                <option value="price-desc">{lang === 'ar' ? 'السعر: من الأعلى للأقل' : 'Price: High to Low'}</option>
-                <option value="rating">{lang === 'ar' ? 'الأعلى تقييماً' : 'Highest Rated'}</option>
-                <option value="discount">{lang === 'ar' ? 'أكبر نسبة خصم' : 'Biggest Discounts'}</option>
+                <option value="featured" className="bg-stone-900 text-white">{lang === 'ar' ? 'الأكثر طلباً (المميز)' : 'Featured'}</option>
+                <option value="price-asc" className="bg-stone-900 text-white">{lang === 'ar' ? 'السعر: من الأقل للأعلى' : 'Price: Low to High'}</option>
+                <option value="price-desc" className="bg-stone-900 text-white">{lang === 'ar' ? 'السعر: من الأعلى للأقل' : 'Price: High to Low'}</option>
+                <option value="rating" className="bg-stone-900 text-white">{lang === 'ar' ? 'الأعلى تقييماً' : 'Highest Rated'}</option>
+                <option value="discount" className="bg-stone-900 text-white">{lang === 'ar' ? 'أكبر نسبة خصم' : 'Biggest Discounts'}</option>
               </select>
             </div>
 
             {/* Price Filter Pill Button */}
             <button
               onClick={() => setFilterDrawerOpen(!filterDrawerOpen)}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors shadow-2xs ${
+              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-bold border transition-colors shadow-md ${
                 filterDrawerOpen || priceRange[1] < 2000
-                  ? 'bg-rose-50 border-rose-300 text-rose-700 font-semibold' 
-                  : 'bg-white border-stone-200 text-stone-700 hover:bg-stone-50'
+                  ? 'bg-rose-950/80 border-amber-400 text-amber-300' 
+                  : 'bg-[#18141F] border-rose-900/40 text-stone-200 hover:bg-[#221C2A]'
               }`}
             >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <SlidersHorizontal className="w-4 h-4 text-amber-400" />
               <span>{lang === 'ar' ? 'تصفية الأسعار' : 'Price Filter'}</span>
             </button>
 
@@ -128,10 +128,10 @@ export default function ProductGrid() {
             {hasActiveFilters && (
               <button
                 onClick={handleResetFilters}
-                className="inline-flex items-center gap-1 text-xs text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded-md"
+                className="inline-flex items-center gap-1.5 text-sm text-rose-400 hover:text-rose-300 font-bold px-3 py-1.5 rounded-xl bg-white/5"
                 title={lang === 'ar' ? 'إعادة ضبط' : 'Reset'}
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="w-4 h-4" />
                 <span>{lang === 'ar' ? 'إعادة ضبط' : 'Reset'}</span>
               </button>
             )}
@@ -140,10 +140,10 @@ export default function ProductGrid() {
 
         {/* Expandable Price Range Filter Bar */}
         {filterDrawerOpen && (
-          <div className="mb-8 p-4 bg-white rounded-2xl border border-rose-100 shadow-sm animate-fade-in">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex-1 max-w-xs">
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
+          <div className="mb-10 p-5 bg-[#18141F] rounded-3xl border border-rose-950/80 shadow-xl animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+              <div className="flex-1 max-w-sm">
+                <label className="block text-sm font-bold text-stone-200 mb-2">
                   {lang === 'ar' ? `أقصى سعر: ${formatPrice(priceRange[1])}` : `Max Price: ${formatPrice(priceRange[1])}`}
                 </label>
                 <input
@@ -153,7 +153,7 @@ export default function ProductGrid() {
                   step="50"
                   value={priceRange[1]}
                   onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
-                  className="w-full accent-rose-500 cursor-pointer"
+                  className="w-full accent-rose-500 cursor-pointer h-2 bg-stone-800 rounded-lg"
                 />
               </div>
 

@@ -27,36 +27,36 @@
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1ede9;
+  background: #141216;
 }
 ::-webkit-scrollbar-thumb {
-  background: #d4b8a8;
+  background: #3a2b34;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b58d78;
+  background: #e11d48;
 }
 
 /* Glassmorphism helpers */
 .glass-effect {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(22, 18, 24, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(229, 219, 212, 0.7);
+  background: rgba(26, 22, 30, 0.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(225, 29, 72, 0.15);
 }
 
 /* Soft glowing cosmetics shadows */
 .shadow-soft {
-  box-shadow: 0 10px 30px -10px rgba(184, 137, 122, 0.15);
+  box-shadow: 0 10px 30px -10px rgba(225, 29, 72, 0.2);
 }
 
 .shadow-card-hover {
-  box-shadow: 0 20px 35px -15px rgba(184, 137, 122, 0.25);
+  box-shadow: 0 20px 40px -15px rgba(225, 29, 72, 0.35);
 }
 
 /* Shimmer animation for banners */

@@ -1,7 +1,6 @@
 import React from 'react';
 import { useStore } from '../context/StoreContext';
 import { CATEGORIES } from '../data/initialData';
-import { Sparkles, Flame, Percent, Crown } from 'lucide-react';
 
 export default function StoryCategories() {
   const { lang, selectedCategory, setSelectedCategory } = useStore();
@@ -12,29 +11,25 @@ export default function StoryCategories() {
       name_ar: 'الكل',
       name_en: 'All',
       image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=300&q=80',
-      badge: '✨',
-      isSpecial: true
+      badge: '✨'
     },
     {
       id: 'bestseller',
       name_ar: 'الأكثر مبيعاً',
       name_en: 'Bestsellers',
       image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=300&q=80',
-      badge: '🔥',
-      isSpecial: true
+      badge: '🔥'
     },
     {
       id: 'offers',
       name_ar: 'عروض حصرية',
-      name_en: 'Special Deals',
+      name_en: 'Deals',
       image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=300&q=80',
-      badge: '🎁',
-      isSpecial: true
+      badge: '🎁'
     },
     ...CATEGORIES.filter(c => c.id !== 'all').map(c => ({
       ...c,
-      badge: null,
-      isSpecial: false
+      badge: null
     }))
   ];
 
@@ -47,10 +42,10 @@ export default function StoryCategories() {
   };
 
   return (
-    <section className="w-full bg-[#FAF7F5] pt-4 pb-2 border-b border-stone-200/60">
+    <section className="w-full bg-[#120F16] pt-4 pb-3 border-b border-rose-950/50">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Horizontal scroll container with hidden scrollbar */}
-        <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto no-scrollbar py-2 px-1">
+        {/* Horizontal scroll container */}
+        <div className="flex items-center gap-5 sm:gap-7 overflow-x-auto no-scrollbar py-2 px-1">
           {storyItems.map((item) => {
             const isSelected = selectedCategory === item.id;
             return (
@@ -62,10 +57,10 @@ export default function StoryCategories() {
                 {/* Story Circle Avatar */}
                 <div className={`relative p-0.5 rounded-full transition-all duration-300 ${
                   isSelected 
-                    ? 'ring-2 ring-rose-600 ring-offset-2 ring-offset-[#FAF7F5] scale-105' 
-                    : 'bg-gradient-to-tr from-rose-400 via-pink-400 to-amber-300 group-hover:scale-105 group-hover:shadow-md'
+                    ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-[#120F16] scale-110 shadow-lg shadow-rose-950/60' 
+                    : 'bg-gradient-to-tr from-amber-400 via-rose-500 to-pink-500 group-hover:scale-105 group-hover:shadow-lg'
                 }`}>
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full p-0.5 bg-white overflow-hidden shadow-inner">
+                  <div className="w-18 h-18 sm:w-22 sm:h-22 rounded-full p-0.5 bg-[#1A1620] overflow-hidden shadow-inner">
                     <img
                       src={item.image}
                       alt={lang === 'ar' ? item.name_ar : item.name_en}
@@ -74,19 +69,19 @@ export default function StoryCategories() {
                     />
                   </div>
 
-                  {/* Badge Emoji / Icon */}
+                  {/* Badge Emoji */}
                   {item.badge && (
-                    <span className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-white rounded-full flex items-center justify-center text-xs shadow-md border border-rose-100 animate-bounce">
+                    <span className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 bg-[#201B26] rounded-full flex items-center justify-center text-xs sm:text-sm shadow-md border border-amber-500/40 animate-bounce">
                       {item.badge}
                     </span>
                   )}
                 </div>
 
-                {/* Category Label */}
-                <span className={`mt-2 text-xs sm:text-sm font-medium tracking-tight text-center max-w-[76px] sm:max-w-[88px] truncate transition-colors ${
+                {/* Category Label - Much bigger and bolder */}
+                <span className={`mt-2.5 text-xs sm:text-sm font-extrabold tracking-tight text-center max-w-[84px] sm:max-w-[96px] truncate transition-colors ${
                   isSelected 
-                    ? 'text-rose-800 font-bold' 
-                    : 'text-stone-700 group-hover:text-rose-600'
+                    ? 'text-amber-300 font-black' 
+                    : 'text-stone-300 group-hover:text-rose-300'
                 }`}>
                   {lang === 'ar' ? item.name_ar : item.name_en}
                 </span>

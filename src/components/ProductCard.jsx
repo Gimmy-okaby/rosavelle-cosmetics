@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Heart, ShoppingBag, Eye, Star, Check } from 'lucide-react';
+import { Heart, ShoppingBag, Eye, Star, Check, Sparkles } from 'lucide-react';
 
 export default function ProductCard({ product }) {
   const { 
     lang, 
+    currency,
     formatPrice, 
     addToCart, 
     toggleWishlist, 
@@ -40,10 +41,10 @@ export default function ProductCard({ product }) {
   return (
     <div 
       onClick={() => setSelectedProduct(product)}
-      className="group relative bg-white rounded-3xl overflow-hidden border border-stone-200/80 shadow-xs hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 flex flex-col cursor-pointer"
+      className="group relative bg-[#18141F] rounded-3xl overflow-hidden border border-rose-950/60 shadow-lg hover:border-amber-500/40 hover:shadow-2xl hover:shadow-rose-950/60 hover:-translate-y-1.5 transition-all duration-300 flex flex-col cursor-pointer"
     >
       {/* Product Image Area */}
-      <div className="relative aspect-square w-full overflow-hidden bg-stone-100">
+      <div className="relative aspect-square w-full overflow-hidden bg-[#120F16]">
         <img
           src={product.image}
           alt={lang === 'ar' ? product.name_ar : product.name_en}
@@ -52,14 +53,14 @@ export default function ProductCard({ product }) {
         />
 
         {/* Badges */}
-        <div className="absolute top-3 start-3 flex flex-col gap-1.5 items-start z-10">
+        <div className="absolute top-3 start-3 flex flex-col gap-2 items-start z-10">
           {product.badge_ar && (
-            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-stone-900/90 text-white backdrop-blur-xs shadow-xs">
+            <span className="text-xs font-black px-3 py-1.5 rounded-full bg-gradient-to-r from-stone-950 to-stone-900 text-amber-300 border border-amber-500/30 backdrop-blur-md shadow-md">
               {lang === 'ar' ? product.badge_ar : product.badge_en}
             </span>
           )}
           {discountPercent > 0 && (
-            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-500 text-white shadow-xs">
+            <span className="text-xs font-black px-2.5 py-1 rounded-full bg-rose-600 text-white shadow-md">
               -{discountPercent}%
             </span>
           )}
@@ -69,22 +70,22 @@ export default function ProductCard({ product }) {
         <div className="absolute top-3 end-3 flex flex-col gap-2 z-10">
           <button
             onClick={handleToggleWishlist}
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-md ${
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-lg ${
               isWish 
-                ? 'bg-rose-500 text-white' 
-                : 'bg-white/90 text-stone-700 hover:text-rose-500 hover:bg-white'
+                ? 'bg-rose-600 text-white scale-105' 
+                : 'bg-[#18141F]/80 backdrop-blur-md text-stone-300 hover:text-white hover:bg-rose-600'
             }`}
             title={lang === 'ar' ? "إضافة للمفضلة" : "Add to wishlist"}
           >
-            <Heart className={`w-4 h-4 ${isWish ? 'fill-current' : ''}`} />
+            <Heart className={`w-5 h-5 ${isWish ? 'fill-current' : ''}`} />
           </button>
 
           <button
             onClick={handleQuickView}
-            className="w-9 h-9 rounded-full bg-white/90 hover:bg-white text-stone-700 hover:text-stone-900 flex items-center justify-center transition-all shadow-md sm:opacity-0 group-hover:opacity-100"
+            className="w-10 h-10 rounded-full bg-[#18141F]/80 backdrop-blur-md text-stone-300 hover:text-white hover:bg-stone-800 flex items-center justify-center transition-all shadow-lg sm:opacity-0 group-hover:opacity-100"
             title={lang === 'ar' ? "معاينة سريعة" : "Quick view"}
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-5 h-5" />
           </button>
         </div>
 
@@ -92,14 +93,14 @@ export default function ProductCard({ product }) {
         {product.shades && product.shades.length > 0 && (
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="absolute bottom-2.5 inset-x-2.5 flex items-center justify-center gap-1.5 bg-white/90 backdrop-blur-xs py-1 px-2.5 rounded-full shadow-xs"
+            className="absolute bottom-3 inset-x-3 flex items-center justify-center gap-2 bg-[#120F16]/90 backdrop-blur-md py-1.5 px-3 rounded-full border border-stone-800 shadow-md"
           >
             {product.shades.map((shade, idx) => (
               <button
                 key={idx}
                 onClick={() => setSelectedShade(shade)}
                 className={`w-5 h-5 rounded-full border-2 transition-transform ${
-                  selectedShade?.hex === shade.hex ? 'scale-110 border-stone-800' : 'border-white hover:scale-105'
+                  selectedShade?.hex === shade.hex ? 'scale-125 border-amber-400' : 'border-stone-700 hover:scale-110'
                 }`}
                 style={{ backgroundColor: shade.hex }}
                 title={lang === 'ar' ? shade.name_ar : shade.name_en}
@@ -110,70 +111,75 @@ export default function ProductCard({ product }) {
       </div>
 
       {/* Product Content Details */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+      <div className="p-5 flex-1 flex flex-col justify-between bg-gradient-to-b from-[#18141F] to-[#14101A]">
         <div>
           {/* Brand & Ratings */}
-          <div className="flex items-center justify-between text-xs text-stone-500 mb-1.5">
-            <span className="font-semibold uppercase tracking-wider text-rose-600 text-[11px]">
+          <div className="flex items-center justify-between text-xs text-stone-400 mb-2">
+            <span className="font-extrabold uppercase tracking-widest text-amber-400 text-xs">
               {product.brand}
             </span>
-            <div className="flex items-center gap-1 font-medium text-stone-700">
-              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              <span>{product.rating}</span>
-              <span className="text-stone-400">({product.reviewsCount})</span>
+            <div className="flex items-center gap-1.5 font-bold text-stone-200">
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+              <span className="text-sm font-black">{product.rating}</span>
+              <span className="text-stone-500 text-xs">({product.reviewsCount})</span>
             </div>
           </div>
 
-          {/* Title */}
-          <h3 className="font-bold text-stone-900 text-sm sm:text-base leading-snug line-clamp-2 group-hover:text-rose-600 transition-colors mb-2">
+          {/* Title - Bigger and Bolder */}
+          <h3 className="font-extrabold text-white text-base sm:text-lg leading-snug line-clamp-2 group-hover:text-amber-300 transition-colors mb-2.5">
             {lang === 'ar' ? product.name_ar : product.name_en}
           </h3>
 
           {/* Active shade preview text if makeup */}
           {selectedShade && (
-            <p className="text-[11px] text-stone-500 mb-2">
-              <span className="font-medium">{lang === 'ar' ? 'الدرجة: ' : 'Shade: '}</span>
-              <span className="text-stone-800 font-semibold">{lang === 'ar' ? selectedShade.name_ar : selectedShade.name_en}</span>
+            <p className="text-xs text-stone-300 mb-3 font-medium">
+              <span>{lang === 'ar' ? 'الدرجة: ' : 'Shade: '}</span>
+              <span className="text-amber-300 font-bold">{lang === 'ar' ? selectedShade.name_ar : selectedShade.name_en}</span>
             </p>
           )}
         </div>
 
         {/* Price & Add to Cart button */}
-        <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-2 mt-auto">
+        <div className="pt-4 border-t border-rose-950/40 flex items-center justify-between gap-3 mt-auto">
+          {/* High-Impact Price Typography */}
           <div className="flex flex-col">
             <div className="flex items-baseline gap-1.5">
-              <span className="font-extrabold text-base sm:text-lg text-stone-900">
-                {formatPrice(product.price)}
+              <span className="font-black text-2xl sm:text-3xl text-amber-300 tracking-tight">
+                {product.price}
+              </span>
+              <span className="text-xs sm:text-sm font-bold text-amber-400/80 uppercase">
+                {currency === 'EGP' ? 'ج.م' : currency}
               </span>
               {product.originalPrice && product.originalPrice > product.price && (
-                <span className="text-xs text-stone-400 line-through">
-                  {formatPrice(product.originalPrice)}
+                <span className="text-xs text-stone-500 line-through mr-1">
+                  {product.originalPrice}
                 </span>
               )}
             </div>
-            <span className="text-[10px] text-emerald-600 font-semibold">
-              {product.inStock ? (lang === 'ar' ? 'متوفر للتسليم الفوري' : 'In Stock') : (lang === 'ar' ? 'نفذت الكمية' : 'Out of Stock')}
+            <span className="text-[11px] text-emerald-400 font-bold mt-0.5">
+              {product.inStock ? (lang === 'ar' ? 'متوفر للتسليم الفوري ✓' : 'In Stock ✓') : (lang === 'ar' ? 'نفذت الكمية' : 'Out of Stock')}
             </span>
           </div>
 
+          {/* Add to Cart Button */}
           <button
             onClick={handleAddToCart}
-            className={`flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all duration-200 shadow-xs active:scale-95 ${
+            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-black transition-all duration-200 shadow-md active:scale-95 cursor-pointer ${
               added 
                 ? 'bg-emerald-600 text-white scale-105' 
-                : 'bg-stone-900 hover:bg-rose-600 text-white'
+                : 'bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white shadow-rose-950/50'
             }`}
             title={lang === 'ar' ? "إضافة إلى السلة" : "Add to bag"}
           >
             {added ? (
               <>
-                <Check className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{lang === 'ar' ? "تمت الإضافة!" : "Added!"}</span>
+                <Check className="w-4 h-4" />
+                <span>{lang === 'ar' ? "تمت!" : "Added!"}</span>
               </>
             ) : (
               <>
-                <ShoppingBag className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{lang === 'ar' ? "أضيفي" : "Add"}</span>
+                <ShoppingBag className="w-4 h-4" />
+                <span>{lang === 'ar' ? "أضيفي" : "Add"}</span>
               </>
             )}
           </button>
